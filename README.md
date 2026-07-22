@@ -36,6 +36,39 @@ npm run typecheck && npm run lint
 
 Local Supabase Studio: http://localhost:54323 · emails land in Mailpit: http://localhost:54324
 
+## Project structure
+
+```
+app/
+  page.tsx                 # marketing landing
+  (auth)/                  # /login, /signup + auth server actions
+  auth/
+    callback/route.ts      # OAuth / email-confirm code exchange
+    confirm/route.ts       # magic-link token verification (client invites)
+  app/                     # freelancer app (session-guarded by proxy.ts)
+    page.tsx               # dashboard: client list, plan usage, add client
+    onboarding/            # first-run workspace creation
+    settings/              # branding (name, color, logo) + billing placeholder
+    clients/[id]/          # manage one client: invite link, projects, milestones
+    projects/actions.ts    # project + milestone server actions
+  p/[portal_slug]/         # client portal (workspace-branded, RLS-scoped)
+components/
+  tideline.tsx             # the wave signature element
+  ui/                      # shadcn/ui (Base UI flavor)
+lib/
+  supabase/                # browser / server / admin clients + proxy session
+  workspace.ts, status.ts, slug.ts
+proxy.ts                   # Next 16 middleware: session refresh + /app guard
+supabase/
+  config.toml              # local stack config incl. custom access token hook
+  migrations/              # tables → auth hook → RLS → storage → grants
+tests/
+  rls.test.ts              # tenant-isolation suite (merge requirement)
+emails/                    # React Email templates (upcoming milestone)
+.claude/skills/alon-design # design-system skill for AI-assisted work
+docs/                      # SPEC.md, INSTRUCTIONS.md
+```
+
 ## Architecture in one paragraph
 
 Every table carries `workspace_id`; **all authorization lives in Postgres RLS policies**, not route handlers. Freelancers get full CRUD on workspaces they own; client sessions (JWT claims `user_role: 'client'` + `client_id`, stamped by a custom access token hook reading `user_roles`) can read only rows tied to their `client_id` and can write only `messages`. The RLS test suite (`tests/rls.test.ts`) proves tenant isolation and is a merge requirement — CI runs it against a fresh local stack on every push.
