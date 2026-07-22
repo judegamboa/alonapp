@@ -48,11 +48,16 @@ export async function signIn(email: string): Promise<SupabaseClient> {
   return client;
 }
 
-/** Delete all test users (cascades through workspaces → all tenant data). */
+/**
+ * Delete test users only (emails @test.dev), cascading through workspaces →
+ * all tenant data. Never touches manually created local accounts.
+ */
 export async function deleteAllUsers() {
   const { data, error } = await admin.auth.admin.listUsers({ perPage: 1000 });
   if (error) throw error;
   await Promise.all(
-    data.users.map((u) => admin.auth.admin.deleteUser(u.id))
+    data.users
+      .filter((u) => u.email?.endsWith("@test.dev"))
+      .map((u) => admin.auth.admin.deleteUser(u.id))
   );
 }

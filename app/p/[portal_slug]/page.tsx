@@ -1,11 +1,27 @@
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Tideline } from "@/components/tideline";
 import { createClient } from "@/lib/supabase/server";
+import { STATUS_LABELS, type ProjectStatus } from "@/lib/status";
+
+type PortalProject = {
+  id: string;
+  name: string;
+  status: ProjectStatus;
+  milestones: {
+    id: string;
+    title: string;
+    done: boolean;
+    due_date: string | null;
+    sort_order: number;
+  }[];
+};
 
 type PortalData = {
   id: string;
@@ -55,6 +71,16 @@ export default async function PortalPage({
   const ws = portal.workspaces;
   const brand = ws.brand_color ?? "#0E6B5C";
 
+  const { data: projectRows } = await supabase
+    .from("projects")
+    .select(
+      "id, name, status, milestones ( id, title, done, due_date, sort_order )"
+    )
+    .eq("client_id", portal.id)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+  const projects = (projectRows ?? []) as unknown as PortalProject[];
+
   return (
     <div className="flex min-h-screen flex-col">
       <div style={{ backgroundColor: brand }} className="h-1.5 w-full" />
@@ -88,11 +114,79 @@ export default async function PortalPage({
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
         <div className="grid gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Project status</CardTitle>
+              {projects.length === 0 && (
+                <CardDescription>
+                  Projects and milestones will appear here.
+                </CardDescription>
+              )}
+            </CardHeader>
+            {projects.length > 0 && (
+              <CardContent className="flex flex-col gap-4">
+                {projects.map((project) => (
+                  <div key={project.id} className="rounded-lg border p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-medium">{project.name}</p>
+                      <Badge
+                        className={
+                          project.status === "done"
+                            ? "text-white"
+                            : "bg-muted text-foreground"
+                        }
+                        style={
+                          project.status === "done"
+                            ? { backgroundColor: brand }
+                            : undefined
+                        }
+                      >
+                        {STATUS_LABELS[project.status]}
+                      </Badge>
+                    </div>
+                    {project.milestones.length > 0 && (
+                      <ul className="mt-3 flex flex-col gap-2 text-sm">
+                        {[...project.milestones]
+                          .sort((a, b) => a.sort_order - b.sort_order)
+                          .map((m) => (
+                            <li key={m.id} className="flex items-center gap-2">
+                              <span
+                                className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] ${
+                                  m.done ? "text-white" : "border"
+                                }`}
+                                style={
+                                  m.done
+                                    ? { backgroundColor: brand }
+                                    : undefined
+                                }
+                              >
+                                {m.done ? "✓" : ""}
+                              </span>
+                              <span
+                                className={
+                                  m.done
+                                    ? "text-muted-foreground line-through"
+                                    : ""
+                                }
+                              >
+                                {m.title}
+                              </span>
+                              {m.due_date && !m.done && (
+                                <span className="font-mono text-xs text-muted-foreground">
+                                  due {m.due_date}
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            )}
+          </Card>
+
           {[
-            {
-              title: "Project status",
-              body: "Projects and milestones will appear here.",
-            },
             { title: "Files", body: "Shared files will appear here." },
             { title: "Messages", body: "Conversations will appear here." },
             {
