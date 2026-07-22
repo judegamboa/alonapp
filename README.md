@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Alon
 
-## Getting Started
+Branded client portals for freelancers — live at [alonapp.com](https://www.alonapp.com).
 
-First, run the development server:
+Freelancers sign up, brand a workspace, and invite clients. Each client gets a portal (magic-link access, no password) showing project status, milestones, shared files, threaded messages, and payment request cards. Built for Filipino freelancers serving overseas clients.
+
+Full product spec: [`docs/SPEC.md`](docs/SPEC.md) · build instructions: [`docs/INSTRUCTIONS.md`](docs/INSTRUCTIONS.md) · decision log: [`DECISIONS.md`](DECISIONS.md)
+
+## Stack
+
+- **Next.js 16** (App Router, TypeScript strict) on Vercel
+- **Supabase** — Postgres with RLS as the security boundary, Auth (password/OAuth for freelancers, magic-link OTP for clients), Storage
+- **Tailwind CSS 4 + shadcn/ui** (Base UI flavor)
+- **Resend + React Email** for transactional email (upcoming milestone)
+- **Paddle** for subscription billing (upcoming milestone)
+- **Zod** validation at every server boundary
+
+## Local development
+
+Prereqs: Node 22+, Docker Desktop (for local Supabase).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run db:start      # boots local Supabase (Postgres/Auth/Storage) in Docker
+cp .env.example .env.local   # then fill values from `npx supabase status`
+npm run dev           # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Useful:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run db:reset      # re-apply all migrations to the local DB
+npm test              # RLS isolation suite (needs db:start running)
+npm run typecheck && npm run lint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Local Supabase Studio: http://localhost:54323 · emails land in Mailpit: http://localhost:54324
 
-## Learn More
+## Architecture in one paragraph
 
-To learn more about Next.js, take a look at the following resources:
+Every table carries `workspace_id`; **all authorization lives in Postgres RLS policies**, not route handlers. Freelancers get full CRUD on workspaces they own; client sessions (JWT claims `user_role: 'client'` + `client_id`, stamped by a custom access token hook reading `user_roles`) can read only rows tied to their `client_id` and can write only `messages`. The RLS test suite (`tests/rls.test.ts`) proves tenant isolation and is a merge requirement — CI runs it against a fresh local stack on every push.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Push to `main` → GitHub Actions CI (typecheck, lint, RLS tests) and Vercel auto-deploy. Database changes ship via `npx supabase db push` to the linked hosted project (`ap-southeast-1`). Production env vars live in Vercel; the service-role key is server-only.
 
-## Deploy on Vercel
+## Design
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The visual system (ocean-ink palette, Bricolage Grotesque display, the tideline signature) is documented as a Claude Code skill at [`.claude/skills/alon-design/SKILL.md`](.claude/skills/alon-design/SKILL.md) — read it before touching UI.
