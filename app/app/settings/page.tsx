@@ -15,7 +15,7 @@ export default async function SettingsPage() {
 
   return (
     <main className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">Settings</h1>
+      <h1 className="font-heading text-2xl font-bold">Settings</h1>
       <Card>
         <CardHeader>
           <CardTitle>Branding</CardTitle>

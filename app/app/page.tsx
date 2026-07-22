@@ -34,7 +34,7 @@ export default async function DashboardPage() {
           />
         )}
         <div>
-          <h1 className="text-2xl font-bold">{workspace.name}</h1>
+          <h1 className="font-heading text-2xl font-bold">{workspace.name}</h1>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Badge
               variant="outline"
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
             >
               {workspace.plan} plan
             </Badge>
-            <span>
+            <span className="font-mono">
               {used} of {limit ?? "unlimited"} client portal
               {limit === 1 ? "" : "s"} used
             </span>
