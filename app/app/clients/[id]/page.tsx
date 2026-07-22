@@ -14,6 +14,7 @@ import { setClientArchived } from "../actions";
 import { InviteButton } from "./invite-button";
 import { ProjectsSection } from "./projects-section";
 import { FilesSection } from "./files-section";
+import { MessagesSection } from "./messages-section";
 
 export default async function ClientPage({
   params,
@@ -80,17 +81,14 @@ export default async function ClientPage({
 
       <ProjectsSection clientId={client.id} />
       <FilesSection clientId={client.id} />
+      <MessagesSection clientId={client.id} />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {["Messages", "Payment requests"].map((section) => (
-          <Card key={section}>
-            <CardHeader>
-              <CardTitle className="text-base">{section}</CardTitle>
-              <CardDescription>Arrives in a later milestone.</CardDescription>
-            </CardHeader>
-          </Card>
-        ))}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Payment requests</CardTitle>
+          <CardDescription>Arrives in a later milestone.</CardDescription>
+        </CardHeader>
+      </Card>
     </main>
   );
 }

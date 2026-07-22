@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { PROJECT_STATUSES } from "@/lib/status";
+import { PROJECT_STATUSES, STATUS_LABELS } from "@/lib/status";
+import { notifyStatusUpdate } from "@/lib/notify";
 
 const nameSchema = z.string().trim().min(2, "Name is too short").max(80);
 const uuidSchema = z.string().uuid();
@@ -56,11 +57,26 @@ export async function setProjectStatus(
   const status = z.enum(PROJECT_STATUSES).safeParse(formData.get("status"));
   if (!status.success) return;
 
+  const { data: before } = await supabase
+    .from("projects")
+    .select("name, status")
+    .eq("id", projectId)
+    .maybeSingle();
+
   await supabase
     .from("projects")
     .update({ status: status.data })
     .eq("id", projectId);
   revalidatePath(`/app/clients/${clientId}`);
+
+  if (before && before.status !== status.data) {
+    await notifyStatusUpdate(
+      clientId,
+      before.name,
+      STATUS_LABELS[before.status as keyof typeof STATUS_LABELS],
+      STATUS_LABELS[status.data]
+    );
+  }
 }
 
 export async function deleteProject(projectId: string, clientId: string) {

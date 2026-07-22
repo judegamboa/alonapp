@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PLAN_LIMITS, type Workspace } from "@/lib/workspace";
 import { portalSlug } from "@/lib/slug";
+import { sendClientMagicLink } from "@/lib/notify";
 
 const newClientSchema = z.object({
   name: z.string().trim().min(2, "Client name must be at least 2 characters").max(80),
@@ -138,6 +139,22 @@ export async function generateInviteLink(
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const url = `${appUrl}/auth/confirm?token_hash=${data.properties.hashed_token}&type=magiclink&next=${encodeURIComponent(`/p/${client.portal_slug}`)}`;
   return { ok: true, url };
+}
+
+export async function emailInvite(clientId: string): Promise<InviteResult> {
+  const { supabase } = await requireWorkspace();
+  const { data: client } = await supabase
+    .from("clients")
+    .select("id")
+    .eq("id", clientId)
+    .maybeSingle();
+  if (!client) return { ok: false, error: "Client not found" };
+
+  const result = await sendClientMagicLink(clientId, "invite");
+  if (!result.ok) {
+    return { ok: false, error: result.error ?? "Could not send the invite" };
+  }
+  return { ok: true, url: "" };
 }
 
 export async function setClientArchived(clientId: string, archived: boolean) {

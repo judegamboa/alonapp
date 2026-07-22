@@ -2,18 +2,27 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { generateInviteLink, type InviteResult } from "../actions";
+import { emailInvite, generateInviteLink, type InviteResult } from "../actions";
 
 export function InviteButton({ clientId }: { clientId: string }) {
   const [result, setResult] = useState<InviteResult | null>(null);
   const [pending, setPending] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [emailState, setEmailState] = useState<
+    "idle" | "sending" | "sent" | "error"
+  >("idle");
 
   async function handleGenerate() {
     setPending(true);
     setCopied(false);
     setResult(await generateInviteLink(clientId));
     setPending(false);
+  }
+
+  async function handleEmail() {
+    setEmailState("sending");
+    const res = await emailInvite(clientId);
+    setEmailState(res.ok ? "sent" : "error");
   }
 
   async function handleCopy(url: string) {
@@ -23,15 +32,27 @@ export function InviteButton({ clientId }: { clientId: string }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div>
-        <Button onClick={handleGenerate} disabled={pending}>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button onClick={handleEmail} disabled={emailState === "sending"}>
+          {emailState === "sending"
+            ? "Sending…"
+            : emailState === "sent"
+              ? "Invite sent ✓"
+              : "Email invite to client"}
+        </Button>
+        <Button variant="outline" onClick={handleGenerate} disabled={pending}>
           {pending
             ? "Creating link…"
             : result?.ok
-              ? "Create a new invite link"
-              : "Create invite link"}
+              ? "Create a new link"
+              : "Copy a link instead"}
         </Button>
       </div>
+      {emailState === "error" && (
+        <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          Could not send the invite. Try copying a link instead.
+        </p>
+      )}
       {result && !result.ok && (
         <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {result.error}

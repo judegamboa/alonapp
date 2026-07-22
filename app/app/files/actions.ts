@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { notifyFilesShared } from "@/lib/notify";
 
 const FILE_MAX_BYTES = 25 * 1024 * 1024;
 
@@ -86,6 +87,7 @@ export async function uploadFile(
     return { ok: false, error: "Upload failed, please try again" };
   }
 
+  await notifyFilesShared(clientId, [filename]);
   revalidatePath(`/app/clients/${clientId}`);
   return { ok: true };
 }

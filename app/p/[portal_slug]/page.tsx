@@ -1,4 +1,6 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -7,9 +9,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tideline } from "@/components/tideline";
+import { MessageList } from "@/components/message-thread";
 import { createClient } from "@/lib/supabase/server";
 import { STATUS_LABELS, type ProjectStatus } from "@/lib/status";
 import { formatBytes, getFileGroups } from "@/lib/files";
+import { getThreads } from "@/lib/messages";
+import { postClientMessage } from "./actions";
 
 type PortalProject = {
   id: string;
@@ -82,6 +87,7 @@ export default async function PortalPage({
     .order("created_at", { ascending: true });
   const projects = (projectRows ?? []) as unknown as PortalProject[];
   const fileGroups = await getFileGroups(portal.id);
+  const threads = await getThreads(portal.id);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -259,20 +265,67 @@ export default async function PortalPage({
             )}
           </Card>
 
-          {[
-            { title: "Messages", body: "Conversations will appear here." },
-            {
-              title: "Payment requests",
-              body: "Payment requests will appear here.",
-            },
-          ].map((section) => (
-            <Card key={section.title}>
-              <CardHeader>
-                <CardTitle className="text-base">{section.title}</CardTitle>
-                <CardDescription>{section.body}</CardDescription>
-              </CardHeader>
-            </Card>
-          ))}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Messages</CardTitle>
+              {threads.length === 0 && (
+                <CardDescription>
+                  Conversations will appear here.
+                </CardDescription>
+              )}
+            </CardHeader>
+            {threads.length > 0 && (
+              <CardContent className="flex flex-col gap-4">
+                {threads.map((thread) => (
+                  <div key={thread.id} className="rounded-lg border p-4">
+                    <div className="mb-2 flex items-baseline justify-between gap-2">
+                      <p className="font-medium">{thread.title}</p>
+                      <span className="text-xs text-muted-foreground">
+                        {thread.projectName}
+                      </span>
+                    </div>
+                    <MessageList
+                      messages={thread.messages}
+                      accent={brand}
+                      labels={{ freelancer: ws.name, client: "You" }}
+                    />
+                    <form
+                      action={postClientMessage.bind(
+                        null,
+                        thread.id,
+                        portal_slug
+                      )}
+                      className="mt-3 flex items-center gap-2"
+                    >
+                      <Input
+                        name="body"
+                        placeholder="Write a reply…"
+                        required
+                        maxLength={5000}
+                        className="text-sm"
+                      />
+                      <Button
+                        type="submit"
+                        size="sm"
+                        style={{ backgroundColor: brand }}
+                      >
+                        Send
+                      </Button>
+                    </form>
+                  </div>
+                ))}
+              </CardContent>
+            )}
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Payment requests</CardTitle>
+              <CardDescription>
+                Payment requests will appear here.
+              </CardDescription>
+            </CardHeader>
+          </Card>
         </div>
       </main>
 
