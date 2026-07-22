@@ -9,6 +9,7 @@ import {
 import { Tideline } from "@/components/tideline";
 import { createClient } from "@/lib/supabase/server";
 import { STATUS_LABELS, type ProjectStatus } from "@/lib/status";
+import { formatBytes, getFileGroups } from "@/lib/files";
 
 type PortalProject = {
   id: string;
@@ -80,6 +81,7 @@ export default async function PortalPage({
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
   const projects = (projectRows ?? []) as unknown as PortalProject[];
+  const fileGroups = await getFileGroups(portal.id);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -186,8 +188,78 @@ export default async function PortalPage({
             )}
           </Card>
 
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Files</CardTitle>
+              {fileGroups.length === 0 && (
+                <CardDescription>
+                  Shared files will appear here.
+                </CardDescription>
+              )}
+            </CardHeader>
+            {fileGroups.length > 0 && (
+              <CardContent>
+                <ul className="divide-y rounded-lg border">
+                  {fileGroups.map((group) => (
+                    <li key={group.filename} className="px-4 py-3">
+                      <div className="flex flex-wrap items-center gap-2 text-sm">
+                        {group.latest.url ? (
+                          <a
+                            href={group.latest.url}
+                            download
+                            className="font-medium underline"
+                            style={{ color: brand }}
+                          >
+                            {group.filename}
+                          </a>
+                        ) : (
+                          <span className="font-medium">{group.filename}</span>
+                        )}
+                        <Badge variant="outline">v{group.latest.version}</Badge>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          {formatBytes(group.latest.size_bytes)}
+                        </span>
+                        <span className="ml-auto text-xs text-muted-foreground">
+                          {new Date(
+                            group.latest.created_at
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {group.history.length > 0 && (
+                        <details className="mt-1">
+                          <summary className="cursor-pointer text-xs text-muted-foreground">
+                            {group.history.length} earlier version
+                            {group.history.length === 1 ? "" : "s"}
+                          </summary>
+                          <ul className="mt-1 flex flex-col gap-1 pl-4 text-xs text-muted-foreground">
+                            {group.history.map((v) => (
+                              <li key={v.id} className="flex items-center gap-2">
+                                {v.url ? (
+                                  <a href={v.url} download className="underline">
+                                    v{v.version}
+                                  </a>
+                                ) : (
+                                  <span>v{v.version}</span>
+                                )}
+                                <span className="font-mono">
+                                  {formatBytes(v.size_bytes)}
+                                </span>
+                                <span>
+                                  {new Date(v.created_at).toLocaleDateString()}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            )}
+          </Card>
+
           {[
-            { title: "Files", body: "Shared files will appear here." },
             { title: "Messages", body: "Conversations will appear here." },
             {
               title: "Payment requests",

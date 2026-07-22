@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 import { setClientArchived } from "../actions";
 import { InviteButton } from "./invite-button";
 import { ProjectsSection } from "./projects-section";
+import { FilesSection } from "./files-section";
 
 export default async function ClientPage({
   params,
@@ -78,9 +79,10 @@ export default async function ClientPage({
       </Card>
 
       <ProjectsSection clientId={client.id} />
+      <FilesSection clientId={client.id} />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        {["Files", "Messages", "Payment requests"].map((section) => (
+      <div className="grid gap-4 sm:grid-cols-2">
+        {["Messages", "Payment requests"].map((section) => (
           <Card key={section}>
             <CardHeader>
               <CardTitle className="text-base">{section}</CardTitle>

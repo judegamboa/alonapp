@@ -321,6 +321,52 @@ describe("client write surface is messages-only", () => {
   });
 });
 
+describe("storage policies (client-files)", () => {
+  const paths = () => ({
+    ownFile: `${a1.workspaceId}/${a1.clientId}/v1/spec.txt`,
+    intruderFile: `${b1.workspaceId}/${b1.clientId}/v1/evil.txt`,
+    clientUpload: `${a1.workspaceId}/${a1.clientId}/v1/from-client.txt`,
+  });
+
+  afterAll(async () => {
+    const p = paths();
+    await admin.storage
+      .from("client-files")
+      .remove([p.ownFile, p.intruderFile, p.clientUpload]);
+  });
+
+  it("freelancer can upload only into their own workspace prefix", async () => {
+    const p = paths();
+    const ok = await fA.storage
+      .from("client-files")
+      .upload(p.ownFile, Buffer.from("hello"), { contentType: "text/plain" });
+    expect(ok.error).toBeNull();
+
+    const denied = await fA.storage
+      .from("client-files")
+      .upload(p.intruderFile, Buffer.from("x"), { contentType: "text/plain" });
+    expect(denied.error).not.toBeNull();
+  });
+
+  it("client can sign their own file, not a sibling's; cannot upload", async () => {
+    const p = paths();
+    const own = await cA1.storage
+      .from("client-files")
+      .createSignedUrl(p.ownFile, 60);
+    expect(own.data?.signedUrl).toBeTruthy();
+
+    const sibling = await cA2.storage
+      .from("client-files")
+      .createSignedUrl(p.ownFile, 60);
+    expect(sibling.error).not.toBeNull();
+
+    const upload = await cA1.storage
+      .from("client-files")
+      .upload(p.clientUpload, Buffer.from("x"), { contentType: "text/plain" });
+    expect(upload.error).not.toBeNull();
+  });
+});
+
 describe("freelancer isolation", () => {
   it("freelancer A has full CRUD in their own workspace", async () => {
     const { data: created, error } = await fA
