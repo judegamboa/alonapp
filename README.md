@@ -39,34 +39,47 @@ Local Supabase Studio: http://localhost:54323 · emails land in Mailpit: http://
 ## Project structure
 
 ```
-app/
-  page.tsx                 # marketing landing
-  (auth)/                  # /login, /signup + auth server actions
-  auth/
-    callback/route.ts      # OAuth / email-confirm code exchange
-    confirm/route.ts       # magic-link token verification (client invites)
-  app/                     # freelancer app (session-guarded by proxy.ts)
-    page.tsx               # dashboard: client list, plan usage, add client
-    onboarding/            # first-run workspace creation
-    settings/              # branding (name, color, logo) + billing placeholder
-    clients/[id]/          # manage one client: invite link, projects, milestones
-    projects/actions.ts    # project + milestone server actions
-  p/[portal_slug]/         # client portal (workspace-branded, RLS-scoped)
-components/
-  tideline.tsx             # the wave signature element
-  ui/                      # shadcn/ui (Base UI flavor)
-lib/
-  supabase/                # browser / server / admin clients + proxy session
-  workspace.ts, status.ts, slug.ts
-proxy.ts                   # Next 16 middleware: session refresh + /app guard
-supabase/
-  config.toml              # local stack config incl. custom access token hook
-  migrations/              # tables → auth hook → RLS → storage → grants
-tests/
-  rls.test.ts              # tenant-isolation suite (merge requirement)
-emails/                    # React Email templates (upcoming milestone)
-.claude/skills/alon-design # design-system skill for AI-assisted work
-docs/                      # SPEC.md, INSTRUCTIONS.md
+alonapp/
+├── app/
+│   ├── page.tsx                    # marketing landing
+│   ├── layout.tsx                  # fonts, analytics, global shell
+│   ├── globals.css                 # design tokens (ocean-ink palette)
+│   ├── (auth)/
+│   │   ├── login/page.tsx
+│   │   ├── signup/page.tsx
+│   │   ├── auth-form.tsx
+│   │   └── actions.ts              # sign up / in / out, Google OAuth
+│   ├── auth/
+│   │   ├── callback/route.ts       # OAuth / email-confirm code exchange
+│   │   └── confirm/route.ts        # magic-link token verification (client invites)
+│   ├── app/                        # freelancer app (session-guarded by proxy.ts)
+│   │   ├── page.tsx                # dashboard: client list, plan usage, add client
+│   │   ├── layout.tsx              # header, nav, client-role redirect guard
+│   │   ├── onboarding/page.tsx     # first-run workspace creation
+│   │   ├── settings/               # branding (name, color, logo) + billing placeholder
+│   │   ├── clients/
+│   │   │   ├── actions.ts          # add / archive client, invite-link generation
+│   │   │   └── [id]/               # manage one client: invite, projects, milestones
+│   │   └── projects/actions.ts     # project + milestone server actions
+│   └── p/
+│       └── [portal_slug]/page.tsx  # client portal (workspace-branded, RLS-scoped)
+├── components/
+│   ├── tideline.tsx                # the wave signature element
+│   └── ui/                         # shadcn/ui (Base UI flavor)
+├── lib/
+│   ├── supabase/                   # browser / server / admin clients + proxy session
+│   ├── workspace.ts                # workspace fetch + plan limits
+│   ├── status.ts                   # project status enum + labels
+│   └── slug.ts                     # portal slug generation
+├── proxy.ts                        # Next 16 middleware: session refresh + /app guard
+├── supabase/
+│   ├── config.toml                 # local stack config incl. custom access token hook
+│   └── migrations/                 # tables → auth hook → RLS → storage → grants
+├── tests/
+│   └── rls.test.ts                 # tenant-isolation suite (merge requirement)
+├── emails/                         # React Email templates (upcoming milestone)
+├── .claude/skills/alon-design/     # design-system skill for AI-assisted work
+└── docs/                           # SPEC.md, INSTRUCTIONS.md
 ```
 
 ## Architecture in one paragraph
