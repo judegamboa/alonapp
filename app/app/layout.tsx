@@ -1,9 +1,41 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/app/(auth)/actions";
+import { createClient } from "@/lib/supabase/server";
 import { NavLinks } from "./nav-links";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+// Client-role sessions belong in their portal, not the freelancer app.
+async function redirectClientsToPortal() {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return;
+  try {
+    const claims = JSON.parse(
+      Buffer.from(session.access_token.split(".")[1], "base64").toString()
+    );
+    if (claims.user_role === "client" && claims.client_id) {
+      const { data: client } = await supabase
+        .from("clients")
+        .select("portal_slug")
+        .eq("id", claims.client_id)
+        .maybeSingle();
+      redirect(client ? `/p/${client.portal_slug}` : "/");
+    }
+  } catch (e) {
+    // Malformed token: let the normal auth flow handle it.
+    if (e instanceof Error && e.message.includes("NEXT_REDIRECT")) throw e;
+  }
+}
+
+export default async function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  await redirectClientsToPortal();
   return (
     <div className="min-h-screen">
       <header className="border-b bg-card">

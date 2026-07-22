@@ -30,7 +30,7 @@ export function NavLinks() {
           >
             {link.label}
             {active && (
-              <Tideline className="absolute -bottom-1 left-3 right-3 h-2 w-auto text-primary" />
+              <Tideline className="absolute -bottom-1 left-3 h-2 w-[calc(100%-1.5rem)] text-primary" />
             )}
           </Link>
         );

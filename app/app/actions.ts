@@ -46,6 +46,17 @@ export async function createWorkspace(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Client-role users must never become workspace owners.
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (session) {
+    const claims = JSON.parse(
+      Buffer.from(session.access_token.split(".")[1], "base64").toString()
+    );
+    if (claims.user_role === "client") redirect("/");
+  }
+
   const { error } = await supabase.from("workspaces").insert({
     owner_id: user.id,
     name: parsed.data.name,
