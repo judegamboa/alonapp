@@ -1,0 +1,13 @@
+import { AuthForm } from "../auth-form";
+import { signIn } from "../actions";
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; message?: string }>;
+}) {
+  const { error, message } = await searchParams;
+  return (
+    <AuthForm mode="login" action={signIn} error={error} message={message} />
+  );
+}
