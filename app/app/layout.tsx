@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { signOut } from "@/app/(auth)/actions";
 import { createClient } from "@/lib/supabase/server";
 import { NavLinks } from "./nav-links";
+import { DevNotice } from "@/components/dev-notice";
 
 // Client-role sessions belong in their portal, not the freelancer app.
 async function redirectClientsToPortal() {
@@ -38,6 +39,7 @@ export default async function AppLayout({
   await redirectClientsToPortal();
   return (
     <div className="min-h-screen">
+      <DevNotice />
       <header className="border-b bg-card">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-6">

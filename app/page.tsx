@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tideline } from "@/components/tideline";
+import { DevNotice } from "@/components/dev-notice";
 
 const features = [
   {
@@ -110,6 +111,7 @@ function PortalMock() {
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
+      <DevNotice />
       <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-5">
         <span className="font-heading text-xl font-bold tracking-tight">
           alon
