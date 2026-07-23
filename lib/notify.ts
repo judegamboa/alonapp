@@ -5,8 +5,10 @@ import type { EmailWorkspace } from "@/emails/components/branded-email";
 import NewMessage from "@/emails/new-message";
 import FilesShared from "@/emails/files-shared";
 import StatusUpdate from "@/emails/status-update";
+import PaymentRequest from "@/emails/payment-request";
 import ClientInvite from "@/emails/client-invite";
 import ClientLoginLink from "@/emails/client-login-link";
+import { formatAmount } from "@/lib/currency";
 
 const DEBOUNCE_MINUTES = 15;
 
@@ -180,6 +182,37 @@ export async function notifyStatusUpdate(
     });
   } catch (e) {
     console.error("[notifyStatusUpdate]", e);
+  }
+}
+
+/**
+ * Notify the client that a payment request was created. The CTA points at the
+ * portal, not the payment link — the client should see the request in context
+ * before paying, and the portal is the branded surface.
+ */
+export async function notifyPaymentRequest(
+  clientId: string,
+  request: { amount: number; currency: string; description: string }
+): Promise<void> {
+  try {
+    const admin = createAdminClient();
+    const ctx = await loadClientContext(admin, clientId);
+    if (!ctx) return;
+    await sendEmail({
+      to: ctx.client.email,
+      fromName: ctx.workspace.name,
+      subject: `Payment request from ${ctx.workspace.name} — ${formatAmount(request.amount, request.currency)}`,
+      react: PaymentRequest({
+        workspace: ctx.workspace,
+        clientName: ctx.client.name,
+        amount: request.amount,
+        currency: request.currency,
+        description: request.description,
+        url: `${appUrl()}/p/${ctx.client.portal_slug}`,
+      }),
+    });
+  } catch (e) {
+    console.error("[notifyPaymentRequest]", e);
   }
 }
 

@@ -13,6 +13,7 @@ import { MessageList } from "@/components/message-thread";
 import { createClient } from "@/lib/supabase/server";
 import { STATUS_LABELS, type ProjectStatus } from "@/lib/status";
 import { formatBytes, getFileGroups } from "@/lib/files";
+import { formatAmount } from "@/lib/currency";
 import { getThreads } from "@/lib/messages";
 import { postClientMessage } from "./actions";
 
@@ -27,6 +28,15 @@ type PortalProject = {
     due_date: string | null;
     sort_order: number;
   }[];
+};
+
+type PortalPaymentRequest = {
+  id: string;
+  amount: number;
+  currency: string;
+  description: string;
+  payment_url: string | null;
+  status: "unpaid" | "paid";
 };
 
 type PortalData = {
@@ -88,6 +98,13 @@ export default async function PortalPage({
   const projects = (projectRows ?? []) as unknown as PortalProject[];
   const fileGroups = await getFileGroups(portal.id);
   const threads = await getThreads(portal.id);
+
+  const { data: paymentRows } = await supabase
+    .from("payment_requests")
+    .select("id, amount, currency, description, payment_url, status")
+    .eq("client_id", portal.id)
+    .order("created_at", { ascending: false });
+  const paymentRequests = (paymentRows ?? []) as PortalPaymentRequest[];
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -321,10 +338,51 @@ export default async function PortalPage({
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Payment requests</CardTitle>
-              <CardDescription>
-                Payment requests will appear here.
-              </CardDescription>
+              {paymentRequests.length === 0 && (
+                <CardDescription>
+                  Payment requests will appear here.
+                </CardDescription>
+              )}
             </CardHeader>
+            {paymentRequests.length > 0 && (
+              <CardContent className="flex flex-col gap-3">
+                {paymentRequests.map((request) => {
+                  const paid = request.status === "paid";
+                  return (
+                    <div
+                      key={request.id}
+                      className="flex flex-wrap items-start justify-between gap-2 rounded-lg border p-4"
+                    >
+                      <div>
+                        <p className="font-mono text-lg font-semibold">
+                          {formatAmount(request.amount, request.currency)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {request.description}
+                        </p>
+                        {request.payment_url && !paid && (
+                          <a
+                            href={request.payment_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-1 inline-block text-sm font-medium underline"
+                            style={{ color: brand }}
+                          >
+                            Pay now
+                          </a>
+                        )}
+                      </div>
+                      <Badge
+                        className={paid ? "text-white" : "bg-muted text-foreground"}
+                        style={paid ? { backgroundColor: brand } : undefined}
+                      >
+                        {paid ? "Paid" : "Unpaid"}
+                      </Badge>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            )}
           </Card>
         </div>
       </main>

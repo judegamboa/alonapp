@@ -15,6 +15,7 @@ import { InviteButton } from "./invite-button";
 import { ProjectsSection } from "./projects-section";
 import { FilesSection } from "./files-section";
 import { MessagesSection } from "./messages-section";
+import { PaymentRequestsSection } from "./payment-requests-section";
 
 export default async function ClientPage({
   params,
@@ -82,13 +83,7 @@ export default async function ClientPage({
       <ProjectsSection clientId={client.id} />
       <FilesSection clientId={client.id} />
       <MessagesSection clientId={client.id} />
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Payment requests</CardTitle>
-          <CardDescription>Arrives in a later milestone.</CardDescription>
-        </CardHeader>
-      </Card>
+      <PaymentRequestsSection clientId={client.id} />
     </main>
   );
 }

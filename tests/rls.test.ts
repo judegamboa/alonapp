@@ -319,6 +319,31 @@ describe("client write surface is messages-only", () => {
       .select();
     expect(project).toEqual([]);
   });
+
+  it("client a1 cannot mark their own payment request paid", async () => {
+    // Marking paid is the freelancer's call — clients only have SELECT here.
+    const { data: updated } = await cA1
+      .from("payment_requests")
+      .update({ status: "paid", paid_at: new Date().toISOString() })
+      .eq("id", a1.paymentRequestId)
+      .select();
+    expect(updated).toEqual([]);
+
+    const { data: unchanged } = await admin
+      .from("payment_requests")
+      .select("status, paid_at")
+      .eq("id", a1.paymentRequestId)
+      .single();
+    expect(unchanged!.status).toBe("unpaid");
+    expect(unchanged!.paid_at).toBeNull();
+
+    const { data: deleted } = await cA1
+      .from("payment_requests")
+      .delete()
+      .eq("id", a1.paymentRequestId)
+      .select();
+    expect(deleted).toEqual([]);
+  });
 });
 
 describe("storage policies (client-files)", () => {
