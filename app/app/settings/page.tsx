@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { getWorkspace } from "@/lib/workspace";
 import { BrandingForm } from "./branding-form";
+import { BillingSection } from "./billing-section";
 
 export default async function SettingsPage() {
   const workspace = await getWorkspace();
@@ -31,15 +32,7 @@ export default async function SettingsPage() {
           />
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Billing</CardTitle>
-          <CardDescription>
-            Plan: <span className="font-medium">{workspace.plan}</span> —
-            subscription management arrives with the billing milestone.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <BillingSection workspace={workspace} />
     </main>
   );
 }

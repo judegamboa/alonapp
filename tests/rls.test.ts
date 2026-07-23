@@ -452,6 +452,39 @@ describe("freelancer isolation", () => {
     expect(stillThere!.name).toBe("Project");
   });
 
+  it("freelancer A cannot promote their own plan or forge billing IDs", async () => {
+    // Billing columns lost their `authenticated` grant in 20260723000600.
+    // Without that, tier limits would be self-service: the owner policy grants
+    // full row access, so `update({ plan: 'pro' })` would simply succeed.
+    const { error } = await fA
+      .from("workspaces")
+      .update({ plan: "pro" })
+      .eq("id", a1.workspaceId);
+    expect(error).not.toBeNull();
+
+    const { error: billingError } = await fA
+      .from("workspaces")
+      .update({ paddle_subscription_id: "sub_forged" })
+      .eq("id", a1.workspaceId);
+    expect(billingError).not.toBeNull();
+
+    const { data: unchanged } = await admin
+      .from("workspaces")
+      .select("plan, paddle_subscription_id")
+      .eq("id", a1.workspaceId)
+      .single();
+    expect(unchanged!.plan).toBe("free");
+    expect(unchanged!.paddle_subscription_id).toBeNull();
+  });
+
+  it("freelancer A can still edit branding", async () => {
+    const { error } = await fA
+      .from("workspaces")
+      .update({ name: "Studio A renamed", brand_color: "#123456" })
+      .eq("id", a1.workspaceId);
+    expect(error).toBeNull();
+  });
+
   it("freelancer B sees only their own workspace", async () => {
     expect(await visibleRows(fB, "workspaces")).toEqual([b1.workspaceId]);
     expect(await visibleRows(fB, "clients")).toEqual([b1.clientId]);
