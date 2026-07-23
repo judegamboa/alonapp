@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +54,14 @@ type PortalData = {
 // Client portal shell. RLS decides visibility: the invited client sees their
 // own portal; the workspace owner can preview it; everyone else sees the
 // sign-in prompt.
+
+// A portal is one client's private workspace. Keep it out of search results
+// and out of link previews — robots.ts disallows /p/, this covers crawlers
+// that reached the URL some other way.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
+
 export default async function PortalPage({
   params,
 }: {

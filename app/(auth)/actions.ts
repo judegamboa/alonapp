@@ -3,15 +3,12 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { siteUrl as appUrl } from "@/lib/urls";
 
 const credentialsSchema = z.object({
   email: z.string().trim().email("Enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
-
-function appUrl() {
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-}
 
 export async function signUp(formData: FormData) {
   const parsed = credentialsSchema.safeParse({

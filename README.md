@@ -4,6 +4,8 @@ Branded client portals for freelancers — live at [alonapp.com](https://www.alo
 
 Freelancers sign up, brand a workspace, and invite clients. Each client gets a portal (magic-link access, no password) showing project status, milestones, shared files, threaded messages, and payment request cards. Built for Filipino freelancers serving overseas clients.
 
+**New here? Start with [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)** — how the system works, from system context down to the RLS model.
+
 Full product spec: [`docs/SPEC.md`](docs/SPEC.md) · build instructions: [`docs/INSTRUCTIONS.md`](docs/INSTRUCTIONS.md) · decision log: [`DECISIONS.md`](DECISIONS.md)
 
 ## Stack
@@ -11,8 +13,8 @@ Full product spec: [`docs/SPEC.md`](docs/SPEC.md) · build instructions: [`docs/
 - **Next.js 16** (App Router, TypeScript strict) on Vercel
 - **Supabase** — Postgres with RLS as the security boundary, Auth (password/OAuth for freelancers, magic-link OTP for clients), Storage
 - **Tailwind CSS 4 + shadcn/ui** (Base UI flavor)
-- **Resend + React Email** for transactional email (upcoming milestone)
-- **Paddle** for subscription billing (upcoming milestone)
+- **Resend + React Email** for transactional email (7 templates in `emails/`)
+- **Paddle** for subscription billing — webhook-driven plan updates
 - **Zod** validation at every server boundary
 
 ## Local development
@@ -30,7 +32,7 @@ Useful:
 
 ```bash
 npm run db:reset      # re-apply all migrations to the local DB
-npm test              # RLS isolation suite (needs db:start running)
+npm test              # RLS isolation suite (needs db:start) + Paddle signature suite (no DB)
 npm run typecheck && npm run lint
 ```
 
@@ -44,6 +46,8 @@ alonapp/
 │   ├── page.tsx                    # marketing landing
 │   ├── layout.tsx                  # fonts, analytics, global shell
 │   ├── globals.css                 # design tokens (ocean-ink palette)
+│   ├── not-found.tsx               # 404
+│   ├── global-error.tsx            # root error boundary
 │   ├── (auth)/
 │   │   ├── login/page.tsx
 │   │   ├── signup/page.tsx
@@ -52,32 +56,54 @@ alonapp/
 │   ├── auth/
 │   │   ├── callback/route.ts       # OAuth / email-confirm code exchange
 │   │   └── confirm/route.ts        # magic-link token verification (client invites)
+│   ├── api/webhooks/paddle/route.ts # subscription lifecycle → workspaces.plan
 │   ├── app/                        # freelancer app (session-guarded by proxy.ts)
 │   │   ├── page.tsx                # dashboard: client list, plan usage, add client
 │   │   ├── layout.tsx              # header, nav, client-role redirect guard
+│   │   ├── nav-links.tsx           # nav with the micro-tideline active state
+│   │   ├── loading.tsx / error.tsx # route-level pending + error states
+│   │   ├── actions.ts              # workspace creation / branding
 │   │   ├── onboarding/page.tsx     # first-run workspace creation
-│   │   ├── settings/               # branding (name, color, logo) + billing placeholder
+│   │   ├── settings/               # branding form + billing section (plans, usage)
+│   │   ├── billing/actions.ts      # plan reads, dev-only plan switcher
 │   │   ├── clients/
 │   │   │   ├── actions.ts          # add / archive client, invite-link generation
-│   │   │   └── [id]/               # manage one client: invite, projects, milestones
-│   │   └── projects/actions.ts     # project + milestone server actions
+│   │   │   └── [id]/               # one client: projects, files, messages, payments
+│   │   ├── projects/actions.ts     # project + milestone server actions
+│   │   ├── files/actions.ts        # upload + versioning
+│   │   ├── messages/actions.ts     # threads + replies (debounced notifications)
+│   │   └── payment-requests/actions.ts
 │   └── p/
-│       └── [portal_slug]/page.tsx  # client portal (workspace-branded, RLS-scoped)
+│       └── [portal_slug]/          # client portal (workspace-branded, RLS-scoped)
+│           ├── page.tsx
+│           ├── actions.ts          # client-side replies (the only client write)
+│           └── loading.tsx / error.tsx
 ├── components/
 │   ├── tideline.tsx                # the wave signature element
+│   ├── message-thread.tsx          # shared thread UI (app + portal)
+│   ├── dev-notice.tsx              # in-development banner on Alon's own surfaces
 │   └── ui/                         # shadcn/ui (Base UI flavor)
 ├── lib/
 │   ├── supabase/                   # browser / server / admin clients + proxy session
 │   ├── workspace.ts                # workspace fetch + plan limits
 │   ├── status.ts                   # project status enum + labels
-│   └── slug.ts                     # portal slug generation
+│   ├── slug.ts                     # portal slug generation
+│   ├── email.ts                    # Resend wrapper (no-ops without RESEND_API_KEY)
+│   ├── notify.ts                   # which template fires for which event
+│   ├── files.ts                    # storage paths + version resolution
+│   ├── messages.ts                 # thread queries + debounce bookkeeping
+│   ├── currency.ts                 # Intl formatting with a plain-text fallback
+│   └── paddle.ts                   # webhook signature verification, plan mapping
 ├── proxy.ts                        # Next 16 middleware: session refresh + /app guard
 ├── supabase/
 │   ├── config.toml                 # local stack config incl. custom access token hook
 │   └── migrations/                 # tables → auth hook → RLS → storage → grants
+│                                   #   → branding bucket → billing column privileges
 ├── tests/
-│   └── rls.test.ts                 # tenant-isolation suite (merge requirement)
-├── emails/                         # React Email templates (upcoming milestone)
+│   ├── helpers.ts                  # fixture seeding via service role
+│   ├── rls.test.ts                 # tenant-isolation suite (merge requirement)
+│   └── paddle-signature.test.ts    # webhook HMAC: tamper / replay / malformed
+├── emails/                         # React Email templates (7) + branded-email shell
 ├── .claude/skills/alon-design/     # design-system skill for AI-assisted work
 └── docs/                           # SPEC.md, INSTRUCTIONS.md
 ```

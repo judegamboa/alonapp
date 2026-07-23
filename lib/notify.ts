@@ -9,12 +9,9 @@ import PaymentRequest from "@/emails/payment-request";
 import ClientInvite from "@/emails/client-invite";
 import ClientLoginLink from "@/emails/client-login-link";
 import { formatAmount } from "@/lib/currency";
+import { siteUrl as appUrl } from "@/lib/urls";
 
 const DEBOUNCE_MINUTES = 15;
-
-function appUrl() {
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-}
 
 async function ownerEmail(admin: ReturnType<typeof createAdminClient>, ownerId: string) {
   const { data } = await admin.auth.admin.getUserById(ownerId);

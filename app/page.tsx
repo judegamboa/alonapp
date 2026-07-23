@@ -3,6 +3,23 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tideline } from "@/components/tideline";
 import { DevNotice } from "@/components/dev-notice";
+import { MarketingHeader } from "@/components/marketing-header";
+import { MarketingFooter } from "@/components/marketing-footer";
+
+const steps = [
+  {
+    title: "Brand your workspace",
+    body: "Add your logo and color once. Every portal and every email your client receives carries them, not ours.",
+  },
+  {
+    title: "Invite your client",
+    body: "They get a link. No password to make, no account to create, nothing to install — the link is the whole login.",
+  },
+  {
+    title: "They check the link, not you",
+    body: "Status, milestones, files, messages and payment requests, always current. You update the work; the portal updates itself.",
+  },
+];
 
 const features = [
   {
@@ -25,6 +42,7 @@ const tiers = [
     price: "₱0",
     period: "",
     features: ["1 client portal", "Projects, files, messages", "Payment request cards"],
+    cta: "Get started",
   },
   {
     name: "Starter",
@@ -32,12 +50,42 @@ const tiers = [
     period: "/mo",
     features: ["5 client portals", "Your logo and colors", "No Alon watermark"],
     highlighted: true,
+    cta: "Start free, upgrade later",
   },
   {
     name: "Pro",
     price: "₱1,499",
     period: "/mo",
-    features: ["Unlimited portals", "Custom portal subdomain", "Priority support"],
+    features: [
+      "Unlimited client portals",
+      "Your logo and colors",
+      "Priority support",
+      "Custom portal subdomain (coming soon)",
+    ],
+    cta: "Start free, upgrade later",
+  },
+];
+
+const faqs = [
+  {
+    q: "Does my client need to create an account?",
+    a: "No. You invite them by email and they get a link that signs them straight in. No password to remember, no app to install, nothing for you to walk them through on a call.",
+  },
+  {
+    q: "Can one client see another client's portal?",
+    a: "No. A portal only ever shows the work, files and messages belonging to that one client, and the rule is enforced by the database itself — not just by the screen they happen to be looking at.",
+  },
+  {
+    q: "Will the portal look like my business or like Alon?",
+    a: "Yours. On Starter and up, your logo and brand color carry through the portal and every email your client receives, with no Alon watermark. On Free, a small Alon mark stays in the corner.",
+  },
+  {
+    q: "How do clients actually pay me?",
+    a: "You send a payment request card with the amount and your own PayPal, Wise or GCash link. Your client pays you directly and you mark it paid. Alon never touches the money and takes no cut of it.",
+  },
+  {
+    q: "What happens if I cancel or move down a plan?",
+    a: "Nothing breaks. Portals you already have keep working and your clients keep their access — you just can't add new ones until you're back under the limit.",
   },
 ];
 
@@ -112,19 +160,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       <DevNotice />
-      <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-5">
-        <span className="font-heading text-xl font-bold tracking-tight">
-          alon
-        </span>
-        <nav className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" render={<Link href="/login" />}>
-            Log in
-          </Button>
-          <Button size="sm" render={<Link href="/signup" />}>
-            Get started
-          </Button>
-        </nav>
-      </header>
+      <MarketingHeader />
 
       <main className="flex-1">
         <section className="mx-auto max-w-5xl px-6 pb-20 pt-16 text-center sm:pt-24">
@@ -172,31 +208,56 @@ export default function Home() {
             <div>
               <p className="text-sm font-medium text-primary">With Alon</p>
               <p className="mt-2 font-heading text-2xl font-semibold">
-                One link. No more &ldquo;saan na tayo?&rdquo; — your client
-                already knows.
+                One link. Your client checks it instead of checking on you.
               </p>
             </div>
           </div>
         </section>
 
-        <section className="mx-auto max-w-5xl px-6 py-20">
-          <div className="grid gap-10 sm:grid-cols-3">
-            {features.map((f) => (
-              <div key={f.title}>
-                <h2 className="font-heading text-lg font-semibold">
-                  {f.title}
-                </h2>
+        <section id="how-it-works" className="mx-auto max-w-5xl scroll-mt-8 px-6 py-20">
+          <h2 className="max-w-2xl font-heading text-3xl font-bold tracking-tight">
+            From signup to a live client portal in ten minutes
+          </h2>
+          <ol className="mt-10 grid gap-10 sm:grid-cols-3">
+            {steps.map((step, i) => (
+              <li key={step.title}>
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent font-mono text-sm font-medium text-accent-foreground">
+                  {i + 1}
+                </span>
+                <h3 className="mt-4 font-heading text-lg font-semibold">
+                  {step.title}
+                </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {f.body}
+                  {step.body}
                 </p>
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
         </section>
 
         <section className="border-t bg-card">
           <div className="mx-auto max-w-5xl px-6 py-20">
-            <h2 className="text-center font-heading text-3xl font-bold">
+            <h2 className="max-w-2xl font-heading text-3xl font-bold tracking-tight">
+              Everything the &ldquo;quick call&rdquo; used to be for
+            </h2>
+            <div className="mt-10 grid gap-10 sm:grid-cols-3">
+              {features.map((f) => (
+                <div key={f.title}>
+                  <h3 className="font-heading text-lg font-semibold">
+                    {f.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {f.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="pricing" className="scroll-mt-8 border-t">
+          <div className="mx-auto max-w-5xl px-6 py-20">
+            <h2 className="text-center font-heading text-3xl font-bold tracking-tight">
               Simple pricing in pesos
             </h2>
             <div className="mt-10 grid gap-6 sm:grid-cols-3">
@@ -209,8 +270,10 @@ export default function Home() {
                       : ""
                   }`}
                 >
-                  <p className="text-sm font-medium">{tier.name}</p>
-                  <p className="mt-2 font-mono text-3xl font-semibold">
+                  <h3 className="text-sm font-medium">{tier.name}</h3>
+                  {/* Mono gives the comma a full character advance, which
+                      reads as a gap at this size — pull it back in. */}
+                  <p className="mt-2 font-mono text-3xl font-semibold tracking-tight">
                     {tier.price}
                     <span className="text-sm text-muted-foreground">
                       {tier.period}
@@ -226,24 +289,64 @@ export default function Home() {
                     variant={tier.highlighted ? "default" : "outline"}
                     render={<Link href="/signup" />}
                   >
-                    Get started
+                    {tier.cta}
+                    <span className="sr-only"> on {tier.name}</span>
                   </Button>
                 </div>
               ))}
             </div>
+            <p className="mt-8 text-center text-sm text-muted-foreground">
+              Everyone starts on Free. Paid plans open up as Alon leaves beta —
+              you keep the workspace you built.
+            </p>
+          </div>
+        </section>
+
+        <section id="faq" className="scroll-mt-8 border-t bg-card">
+          <div className="mx-auto max-w-3xl px-6 py-20">
+            <h2 className="font-heading text-3xl font-bold tracking-tight">
+              Questions freelancers ask first
+            </h2>
+            <div className="mt-8 divide-y border-y">
+              {faqs.map((faq) => (
+                <details key={faq.q} className="group py-4">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+                    {faq.q}
+                    <span
+                      aria-hidden="true"
+                      className="shrink-0 text-primary transition-transform group-open:rotate-45 motion-reduce:transition-none"
+                    >
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    {faq.a}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="border-t">
+          {/* No tideline here — the footer's sits a screen-height below and
+              two of them in view at once dilutes the signature. */}
+          <div className="mx-auto flex max-w-5xl flex-col items-center px-6 py-20 text-center">
+            <h2 className="max-w-xl font-heading text-3xl font-bold tracking-tight">
+              Your next client shouldn&rsquo;t have to ask.
+            </h2>
+            <p className="mt-4 max-w-md text-muted-foreground">
+              Set up your first portal free. It takes about ten minutes and your
+              client never has to sign up for anything.
+            </p>
+            <Button size="lg" className="mt-8" render={<Link href="/signup" />}>
+              Get started free
+            </Button>
           </div>
         </section>
       </main>
 
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-6 py-10 text-center">
-          <span className="font-heading text-lg font-bold">alon</span>
-          <Tideline className="w-24 text-primary/40" />
-          <p className="text-sm text-muted-foreground">
-            Made for Filipino freelancers and their clients everywhere.
-          </p>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }

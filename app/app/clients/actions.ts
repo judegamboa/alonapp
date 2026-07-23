@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { PLAN_LIMITS, type Workspace } from "@/lib/workspace";
 import { portalSlug } from "@/lib/slug";
 import { sendClientMagicLink } from "@/lib/notify";
+import { siteUrl } from "@/lib/urls";
 
 const newClientSchema = z.object({
   name: z.string().trim().min(2, "Client name must be at least 2 characters").max(80),
@@ -136,8 +137,7 @@ export async function generateInviteLink(
     return { ok: false, error: "Could not create an invite link, try again" };
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const url = `${appUrl}/auth/confirm?token_hash=${data.properties.hashed_token}&type=magiclink&next=${encodeURIComponent(`/p/${client.portal_slug}`)}`;
+  const url = `${siteUrl()}/auth/confirm?token_hash=${data.properties.hashed_token}&type=magiclink&next=${encodeURIComponent(`/p/${client.portal_slug}`)}`;
   return { ok: true, url };
 }
 

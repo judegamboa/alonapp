@@ -1,5 +1,9 @@
 # Claude Code Instructions — Client Portal MVP
 
+> **Status: all 10 build milestones shipped as of 2026-07-23.** This is the original
+> build brief, kept as written except for factual corrections noted inline. Where the
+> implementation deviates from it, `DECISIONS.md` is authoritative.
+
 You are building a multi-tenant client portal SaaS for freelancers. Follow this document strictly. When a decision isn't covered here, choose the simplest option that preserves tenant isolation, and note the decision in `DECISIONS.md`.
 
 ## What we're building
@@ -10,7 +14,7 @@ Out of scope — do NOT build: payment provider integrations for client invoices
 
 ## Stack (fixed — do not substitute)
 
-- Next.js 14+ App Router, TypeScript strict mode, deployed on Vercel
+- Next.js App Router, TypeScript strict mode, deployed on Vercel (built on 16.2 — see `DECISIONS.md`)
 - Supabase: Postgres + RLS, Auth, Storage
 - Tailwind CSS; shadcn/ui for components
 - Resend + React Email for transactional email
@@ -20,7 +24,7 @@ Out of scope — do NOT build: payment provider integrations for client invoices
 ## Architecture rules
 
 1. **RLS is the security boundary.** Every table has `workspace_id uuid not null`. All authorization happens via Postgres RLS policies, not in route handlers. Route handlers may add friendly errors but must never be the only check.
-2. **Two auth roles.** Freelancers: standard Supabase email/password + Google OAuth. Clients: magic-link OTP sessions carrying `role: 'client'` and `client_id` in JWT claims (use a `user_roles` table + custom claims via Supabase auth hook). Client sessions are read-only except for creating messages and viewing files.
+2. **Two auth roles.** Freelancers: standard Supabase email/password + Google OAuth. Clients: magic-link OTP sessions carrying `user_role: 'client'` and `client_id` in JWT claims (use a `user_roles` table + custom claims via Supabase auth hook). The claim is `user_role`, not `role` — the reserved `role` claim maps to the Postgres role and stays `authenticated` (`DECISIONS.md`). Client sessions are read-only except for creating messages and viewing files.
 3. **Server actions for mutations, server components for reads.** No client-side Supabase writes for freelancer actions; use server actions with Zod validation.
 4. **Emails fire from server actions after successful DB writes**, never from the client. Message notification emails are debounced: skip sending if the same thread triggered an email within the last 15 minutes (track `last_emailed_at` on `message_threads`).
 5. **Tier limits enforced server-side.** Before portal creation, check the workspace plan: free = 1 client portal, starter = 5, pro = unlimited. Return a typed error the UI turns into an upgrade prompt.
@@ -43,7 +47,7 @@ RLS policies per table:
 - Client (role 'client'): SELECT where row's `client_id = auth.jwt() ->> 'client_id'` (for workspace-level tables, join through their client row); INSERT on `messages` only, with `author_role = 'client'`.
 - Storage bucket `client-files`: path convention `{workspace_id}/{client_id}/{filename}`; policies mirror the table rules.
 
-Write RLS tests (pgTAP or a Vitest suite using two Supabase test users) proving: client A cannot read client B's rows; a client cannot read another workspace; a client cannot write anything except messages. These tests are a merge requirement.
+Write RLS tests (resolved to a Vitest suite using two Supabase test users, `tests/rls.test.ts`) proving: client A cannot read client B's rows; a client cannot read another workspace; a client cannot write anything except messages. These tests are a merge requirement.
 
 ## Routes
 
@@ -64,6 +68,9 @@ Write RLS tests (pgTAP or a Vitest suite using two Supabase test users) proving:
 5. `files-shared` — file count + names, link into portal (no attachments)
 6. `status-update` — project name, old → new status
 
+A 7th template, `payment-request`, was added during milestone 8 — a payment request the
+client never learns about is useless, since the portal is pull-only (`DECISIONS.md`).
+
 All client-facing emails render the workspace's branding, not ours. Send from `notifications@` on the shared domain via Resend.
 
 ## Build milestones (work in this order, commit per milestone)
@@ -81,7 +88,7 @@ All client-facing emails render the workspace's branding, not ours. Send from `n
 
 ## Conventions
 
-- Env vars in `.env.local`, documented in `.env.example`: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY, PADDLE_API_KEY, PADDLE_WEBHOOK_SECRET, NEXT_PUBLIC_APP_URL
+- Env vars in `.env.local`, documented in `.env.example`: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, RESEND_API_KEY, RESEND_FROM, PADDLE_WEBHOOK_SECRET, PADDLE_PRICE_STARTER, PADDLE_PRICE_PRO, NEXT_PUBLIC_APP_URL. `.env.example` also carries PADDLE_API_KEY, NEXT_PUBLIC_PADDLE_CLIENT_TOKEN and NEXT_PUBLIC_PADDLE_ENV, which no code reads yet — Paddle.js checkout is unwired; billing today is webhook-in only.
 - Never expose the service-role key to the client bundle; it is used only in webhook handlers and admin scripts.
 - Every server action: Zod-parse input → auth check → DB write → (maybe) email → typed result.
 - Prefer boring, readable code over abstractions. No premature generalization.

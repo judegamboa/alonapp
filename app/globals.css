@@ -148,3 +148,12 @@
     stroke-dashoffset: 0;
   }
 }
+
+/* Section-nav anchor jumps (marketing-header.tsx). scroll-behavior isn't
+   auto-disabled by prefers-reduced-motion, so it's opted in explicitly only
+   when motion is fine. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

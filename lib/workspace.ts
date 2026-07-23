@@ -32,7 +32,7 @@ export const PLAN_PRICES: Record<Workspace["plan"], string> = {
 export const PLAN_BLURBS: Record<Workspace["plan"], string> = {
   free: "1 client portal, with an Alon watermark.",
   starter: "5 client portals, your logo and colors, no watermark.",
-  pro: "Unlimited portals, custom portal subdomain, priority support.",
+  pro: "Unlimited client portals, your logo and colors, priority support, custom subdomain (coming soon).",
 };
 
 /** The signed-in freelancer's workspace, or null if they haven't created one. */

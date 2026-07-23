@@ -1,5 +1,9 @@
 # Client Portal — Locked MVP Spec
 
+> **Status: the MVP shipped as of 2026-07-23** — all five build weeks below are complete
+> and the app is live at alonapp.com. This is the original locked spec, kept as written
+> except for factual corrections noted inline. `DECISIONS.md` records every deviation.
+
 **Product:** A webapp where freelancers and small agencies give each client a branded portal showing project status, shared files, messages, and payment requests — replacing the email/Messenger/Google Drive juggle.
 
 **Primary market:** Philippine freelancers (VAs, bookkeepers, designers, developers) serving mostly US/AU clients. Product UI in English; marketing in Taglish.
@@ -14,9 +18,9 @@
 |---|---|---|
 | Free | ₱0 | 1 active client portal, app-branded watermark |
 | Starter | ₱499/mo | 5 client portals, custom branding (logo + colors) |
-| Pro | ₱1,499/mo | Unlimited portals, custom portal subdomain, priority support |
+| Pro | ₱1,499/mo | Unlimited portals, custom portal subdomain *(not built — see `DECISIONS.md`)*, priority support |
 
-- Billing provider: **Paddle or Lemon Squeezy** (merchant of record, supports PH sellers) — decide during week 5. PayMongo is the fallback if GCash/Maya billing proves necessary for conversion.
+- Billing provider: **Paddle** (merchant of record, supports PH sellers) — chosen over Lemon Squeezy in week 5, since the schema already carried `paddle_*` columns. PayMongo remains the fallback if GCash/Maya billing proves necessary for conversion.
 - Tier limits enforced server-side against the workspace's plan.
 
 ## In scope (must ship)
@@ -30,6 +34,8 @@
 7. **Subscription billing** — freelancer plan management and limit enforcement.
 
 ## Transactional email (6 templates, via Resend + React Email)
+
+*A 7th, `payment-request`, was added during the build — see `DECISIONS.md`.*
 
 1. Client portal invite (freelancer-branded magic link — the most important template)
 2. Magic link re-login for returning clients
@@ -48,10 +54,10 @@
 
 ## Tech stack (locked)
 
-- **Next.js 14+ (App Router) on Vercel** — server actions + API routes
+- **Next.js (App Router) on Vercel** — server actions + API routes (built on 16.2)
 - **Supabase** — Postgres (with row-level security), Auth (password/OAuth for freelancers, magic-link OTP for clients), Storage (client files)
 - **Resend + React Email** — transactional email from a shared sending domain
-- **Paddle or Lemon Squeezy** — subscription billing (only third-party payments integration in the MVP)
+- **Paddle** — subscription billing (only third-party payments integration in the MVP)
 
 ## Data model (8 tables)
 

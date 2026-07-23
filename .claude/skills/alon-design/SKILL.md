@@ -47,12 +47,14 @@ Cards are pure white on the paper ground. Dark mode variants exist in the same f
 - shadcn/ui (Base UI flavor) from `components/ui/*`. Note: **no `asChild`** — use the `render` prop: `<Button render={<Link href="..." />}>Label</Button>`.
 - Add new shadcn components with `npx shadcn@latest add <name>`; they inherit the tokens automatically.
 - Status/plan badges: `Badge` with `bg-accent text-accent-foreground`, or outline tinted with the workspace brand color on client-facing surfaces.
+- `components/dev-notice.tsx` — the in-development notice. Belongs on Alon's own surfaces (landing, auth, the freelancer app) and **never** inside a client portal, where the freelancer's brand is what the client should see.
+- `emails/components/branded-email.tsx` — the shared shell every template renders inside. It carries the workspace logo, name, and `brand_color`; build new templates on top of it rather than restating the branding rule per template.
 
 ## Copy voice
 
 - Sentence case everywhere, including buttons and titles.
 - Plain active verbs; buttons say exactly what happens ("Save branding", not "Submit"). Action keeps its name through the flow (Publish → "Published").
-- Product UI is English. Marketing may use at most one light Taglish wink per page (existing: "saan na tayo?").
+- Marketing copy is English throughout — most clients read the portal from outside the Philippines, so Taglish stays out of anything client-facing or public.
 - Errors state what went wrong and what to do next; no apologies, no vagueness. Empty states invite the next action.
 - Name things by what users control ("client portal", "payment request"), never by implementation ("row", "webhook", "record").
 
