@@ -32,7 +32,10 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  if (!user && path.startsWith("/app")) {
+  // Exact match or a real /app/ segment — a plain startsWith("/app") also
+  // matches unrelated routes that merely begin with those four characters,
+  // like /apple-icon.
+  if (!user && (path === "/app" || path.startsWith("/app/"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

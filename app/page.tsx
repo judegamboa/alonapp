@@ -92,6 +92,10 @@ const faqs = [
 function PortalMock() {
   return (
     <div className="mx-auto w-full max-w-3xl overflow-hidden rounded-xl border bg-card shadow-lg shadow-primary/5">
+      {/* Mirrors the real portal (app/p/[portal_slug]/page.tsx), which opens
+          with a bar in the workspace's brand color. Token, not a raw hex —
+          this mock's workspace is teal-branded, same as the avatar below. */}
+      <div className="h-1.5 w-full bg-primary" />
       <div className="flex items-center gap-2 border-b bg-muted/60 px-4 py-2.5">
         <span className="flex gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-border" />
@@ -105,10 +109,17 @@ function PortalMock() {
       <div className="grid gap-4 p-5 text-left sm:grid-cols-5 sm:p-6">
         <div className="sm:col-span-3">
           <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary font-heading text-xs font-bold text-primary-foreground">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary font-heading text-xs font-bold text-primary-foreground">
               C
             </span>
-            <span className="text-sm font-medium">Cruz Design Studio</span>
+            <div className="min-w-0">
+              <p className="text-sm font-medium">Cruz Design Studio</p>
+              {/* The real portal's subtitle — without it the /p/ayla-goods
+                  URL above is unexplained. */}
+              <p className="text-xs text-muted-foreground">
+                Client portal for Ayla Goods
+              </p>
+            </div>
           </div>
           <div className="mt-4 rounded-lg border p-4">
             <div className="flex items-center justify-between">
@@ -133,6 +144,20 @@ function PortalMock() {
                 Brand guidelines
               </li>
             </ul>
+          </div>
+          {/* Files — the hero subhead promises status, files, messages and
+              payment requests, so all four have to be visible here. */}
+          <div className="mt-4 rounded-lg border p-4">
+            <p className="text-xs text-muted-foreground">Files</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+              <span className="min-w-0 break-all font-medium">
+                logo-concepts.pdf
+              </span>
+              <Badge variant="outline">v2</Badge>
+              <span className="font-mono text-xs text-muted-foreground">
+                2.4 MB
+              </span>
+            </div>
           </div>
         </div>
         <div className="flex flex-col gap-4 sm:col-span-2">
@@ -181,13 +206,16 @@ export default function Home() {
             messages, and payment requests — so you look like an agency, not an
             inbox.
           </p>
-          <div className="mt-8 flex justify-center gap-3">
+          {/* One CTA only — "Log in" lives in the sticky header, where
+              returning users look for it. The secondary slot is better spent
+              answering the two things that stop people signing up. */}
+          <div className="mt-8 flex flex-col items-center gap-3">
             <Button size="lg" render={<Link href="/signup" />}>
               Get started free
             </Button>
-            <Button size="lg" variant="outline" render={<Link href="/login" />}>
-              Log in
-            </Button>
+            <p className="text-sm text-muted-foreground">
+              Free plan, no card needed. Your client never signs up.
+            </p>
           </div>
           <div className="mt-14">
             <PortalMock />
@@ -214,7 +242,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="how-it-works" className="mx-auto max-w-5xl scroll-mt-8 px-6 py-20">
+        <section id="how-it-works" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-20">
           <h2 className="max-w-2xl font-heading text-3xl font-bold tracking-tight">
             From signup to a live client portal in ten minutes
           </h2>
@@ -255,7 +283,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="pricing" className="scroll-mt-8 border-t">
+        <section id="pricing" className="scroll-mt-24 border-t">
           <div className="mx-auto max-w-5xl px-6 py-20">
             <h2 className="text-center font-heading text-3xl font-bold tracking-tight">
               Simple pricing in pesos
@@ -302,7 +330,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="faq" className="scroll-mt-8 border-t bg-card">
+        <section id="faq" className="scroll-mt-24 border-t bg-card">
           <div className="mx-auto max-w-3xl px-6 py-20">
             <h2 className="font-heading text-3xl font-bold tracking-tight">
               Questions freelancers ask first
