@@ -29,7 +29,7 @@ export function MessageList({
                 : undefined
             }
           >
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-x-2">
               <span
                 className="text-xs font-medium"
                 style={isClient ? { color: accent } : undefined}
@@ -40,7 +40,11 @@ export function MessageList({
                 {new Date(m.created_at).toLocaleString()}
               </span>
             </div>
-            <p className="mt-1 whitespace-pre-wrap text-sm">{m.body}</p>
+            {/* break-words: people paste raw URLs, which otherwise blow the
+                layout out sideways on a phone. */}
+            <p className="mt-1 whitespace-pre-wrap break-words text-sm">
+              {m.body}
+            </p>
           </li>
         );
       })}

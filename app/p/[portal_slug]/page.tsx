@@ -152,8 +152,10 @@ export default async function PortalPage({
               <CardContent className="flex flex-col gap-4">
                 {projects.map((project) => (
                   <div key={project.id} className="rounded-lg border p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-medium">{project.name}</p>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="min-w-0 break-words font-medium">
+                        {project.name}
+                      </p>
                       <Badge
                         className={
                           project.status === "done"
@@ -226,17 +228,21 @@ export default async function PortalPage({
                   {fileGroups.map((group) => (
                     <li key={group.filename} className="px-4 py-3">
                       <div className="flex flex-wrap items-center gap-2 text-sm">
+                        {/* Filenames are unbroken strings and routinely long;
+                            without break-all they push the card off a phone. */}
                         {group.latest.url ? (
                           <a
                             href={group.latest.url}
                             download
-                            className="font-medium underline"
+                            className="min-w-0 break-all font-medium underline"
                             style={{ color: brand }}
                           >
                             {group.filename}
                           </a>
                         ) : (
-                          <span className="font-medium">{group.filename}</span>
+                          <span className="min-w-0 break-all font-medium">
+                            {group.filename}
+                          </span>
                         )}
                         <Badge variant="outline">v{group.latest.version}</Badge>
                         <span className="font-mono text-xs text-muted-foreground">
@@ -353,11 +359,11 @@ export default async function PortalPage({
                       key={request.id}
                       className="flex flex-wrap items-start justify-between gap-2 rounded-lg border p-4"
                     >
-                      <div>
+                      <div className="min-w-0">
                         <p className="font-mono text-lg font-semibold">
                           {formatAmount(request.amount, request.currency)}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="break-words text-sm text-muted-foreground">
                           {request.description}
                         </p>
                         {request.payment_url && !paid && (

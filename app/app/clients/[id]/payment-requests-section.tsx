@@ -54,11 +54,11 @@ export async function PaymentRequestsSection({
           return (
             <div key={request.id} className="rounded-lg border p-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
+                <div className="min-w-0">
                   <p className="font-mono text-lg font-semibold">
                     {formatAmount(request.amount, request.currency)}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="break-words text-sm text-muted-foreground">
                     {request.description}
                   </p>
                   {request.payment_url && (

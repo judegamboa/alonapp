@@ -36,13 +36,13 @@ export async function FilesSection({ clientId }: { clientId: string }) {
                   {group.latest.url ? (
                     <a
                       href={group.latest.url}
-                      className="text-sm font-medium text-primary underline"
+                      className="min-w-0 break-all text-sm font-medium text-primary underline"
                       download
                     >
                       {group.filename}
                     </a>
                   ) : (
-                    <span className="text-sm font-medium">
+                    <span className="min-w-0 break-all text-sm font-medium">
                       {group.filename}
                     </span>
                   )}

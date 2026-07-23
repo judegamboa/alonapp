@@ -35,19 +35,21 @@ export default async function ClientPage({
 
   return (
     <main className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
           <Link
             href="/app"
             className="text-sm text-muted-foreground hover:text-foreground"
           >
             ← All clients
           </Link>
-          <h1 className="mt-1 flex items-center gap-2 font-heading text-2xl font-bold">
+          <h1 className="mt-1 flex flex-wrap items-center gap-2 font-heading text-2xl font-bold break-words">
             {client.name}
             {archived && <Badge variant="outline">Archived</Badge>}
           </h1>
-          <p className="text-sm text-muted-foreground">{client.email}</p>
+          <p className="break-all text-sm text-muted-foreground">
+            {client.email}
+          </p>
         </div>
         <form
           action={async () => {
