@@ -1,5 +1,11 @@
-import { AuthForm } from "../auth-form";
-import { signIn } from "../actions";
+import type { Metadata } from "next";
+import { AuthShell } from "../auth-shell";
+
+export const metadata: Metadata = {
+  title: "Sign in — Alon",
+  description: "Sign in to your Alon workspace with Google.",
+  alternates: { canonical: "/login" },
+};
 
 export default async function LoginPage({
   searchParams,
@@ -7,7 +13,5 @@ export default async function LoginPage({
   searchParams: Promise<{ error?: string; message?: string }>;
 }) {
   const { error, message } = await searchParams;
-  return (
-    <AuthForm mode="login" action={signIn} error={error} message={message} />
-  );
+  return <AuthShell mode="login" error={error} message={message} />;
 }

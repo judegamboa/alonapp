@@ -18,7 +18,7 @@ This is Next.js 16 with breaking changes — APIs, conventions, and file structu
 # Architecture rules (non-negotiable, from docs/INSTRUCTIONS.md)
 
 1. **RLS is the security boundary** — authorization lives in Postgres policies, never only in route handlers or actions. Every table carries `workspace_id`.
-2. **Two roles**: freelancers (password/OAuth) own workspaces; clients (magic-link OTP) get JWT claims `user_role: 'client'` + `client_id` via the custom access token hook reading `public.user_roles`. The reserved `role` claim stays `authenticated` — check `user_role` instead.
+2. **Two roles**: freelancers (Google OAuth only — no passwords in the product) own workspaces; clients (magic-link OTP) get JWT claims `user_role: 'client'` + `client_id` via the custom access token hook reading `public.user_roles`. The reserved `role` claim stays `authenticated` — check `user_role` instead.
 3. **Server actions for mutations** (Zod-parse → auth check → DB write → typed result), server components for reads. No client-side writes.
 4. `user_roles` is **service-role-only** (no authenticated grants) — manage it via `createAdminClient()` (`lib/supabase/admin.ts`), server-side only.
 5. Tier limits enforced server-side before portal creation (free 1 / starter 5 / pro unlimited).

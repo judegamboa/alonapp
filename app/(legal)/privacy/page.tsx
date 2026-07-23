@@ -24,8 +24,9 @@ export default function Privacy() {
       <LegalSection heading="What we collect">
         <ul>
           <li>
-            <strong>Your account:</strong> email address, and a password if you
-            did not sign in with Google.
+            <strong>Your account:</strong> the email address and name Google
+            gives us when you sign in. Google is the only way to sign in, so we
+            never hold a password for you.
           </li>
           <li>
             <strong>Your workspace:</strong> business name, logo and brand
@@ -82,7 +83,8 @@ export default function Privacy() {
             receive which plan you are on.
           </li>
           <li>
-            <strong>Google</strong> — only if you choose to sign in with it.
+            <strong>Google</strong> — it verifies who you are when you sign in
+            to your Alon account.
           </li>
         </ul>
       </LegalSection>

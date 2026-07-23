@@ -38,6 +38,30 @@ npm run typecheck && npm run lint
 
 Local Supabase Studio: http://localhost:54323 · emails land in Mailpit: http://localhost:54324
 
+### Google sign-in (required — it's the only way in)
+
+Freelancers sign in with Google only, so local dev needs a Google OAuth client:
+
+1. Google Cloud console → APIs & Services → Credentials → **Create OAuth client ID → Web
+   application**. Configure the OAuth consent screen first if prompted (External; add yourself as a
+   test user while it's in Testing).
+2. Add **Authorized redirect URI** `http://127.0.0.1:54321/auth/v1/callback` (this is Supabase's
+   callback, not the app's).
+3. Put the client id + secret in **`.env`** (not `.env.local` — the Supabase CLI reads `.env`):
+   ```
+   SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=…
+   SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=…
+   ```
+4. `npm run db:stop && npm run db:start` so the auth container picks up the values. Verify:
+   `docker inspect supabase_auth_alonapp --format '{{range .Config.Env}}{{println .}}{{end}}' | grep GOOGLE`
+   should show the real id, not `env(…)`.
+
+**Production** uses a *separate* Google OAuth client (redirect URI
+`https://<project-ref>.supabase.co/auth/v1/callback`), configured in the Supabase dashboard
+(Authentication → Providers → Google, plus the redirect allow-list under URL Configuration). Prod
+auth is dashboard-managed — never `supabase config push`, which would overwrite it with local
+values. See `DECISIONS.md`.
+
 ## Project structure
 
 ```

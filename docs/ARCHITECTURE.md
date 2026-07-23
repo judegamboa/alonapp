@@ -127,8 +127,8 @@ The mental model that unlocks the rest of the codebase.
 
 |  | Freelancer | Client |
 |---|---|---|
-| Signs up? | Yes — password or Google OAuth | **Never** |
-| Gets in via | credentials | magic link (email OTP) |
+| Signs up? | Yes — Google OAuth only | **Never** |
+| Gets in via | Google sign-in | magic link (email OTP) |
 | Owns | a workspace | nothing |
 | Can write | everything in their workspace | **one thing**: messages |
 | JWT claims | `user_role: 'freelancer'` | `user_role: 'client'` + `client_id` |

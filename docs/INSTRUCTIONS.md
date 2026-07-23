@@ -24,7 +24,7 @@ Out of scope — do NOT build: payment provider integrations for client invoices
 ## Architecture rules
 
 1. **RLS is the security boundary.** Every table has `workspace_id uuid not null`. All authorization happens via Postgres RLS policies, not in route handlers. Route handlers may add friendly errors but must never be the only check.
-2. **Two auth roles.** Freelancers: standard Supabase email/password + Google OAuth. Clients: magic-link OTP sessions carrying `user_role: 'client'` and `client_id` in JWT claims (use a `user_roles` table + custom claims via Supabase auth hook). The claim is `user_role`, not `role` — the reserved `role` claim maps to the Postgres role and stays `authenticated` (`DECISIONS.md`). Client sessions are read-only except for creating messages and viewing files.
+2. **Two auth roles.** Freelancers: Google OAuth only — no passwords anywhere in the product (`DECISIONS.md`). Clients: magic-link OTP sessions carrying `user_role: 'client'` and `client_id` in JWT claims (use a `user_roles` table + custom claims via Supabase auth hook). The claim is `user_role`, not `role` — the reserved `role` claim maps to the Postgres role and stays `authenticated` (`DECISIONS.md`). Client sessions are read-only except for creating messages and viewing files.
 3. **Server actions for mutations, server components for reads.** No client-side Supabase writes for freelancer actions; use server actions with Zod validation.
 4. **Emails fire from server actions after successful DB writes**, never from the client. Message notification emails are debounced: skip sending if the same thread triggered an email within the last 15 minutes (track `last_emailed_at` on `message_threads`).
 5. **Tier limits enforced server-side.** Before portal creation, check the workspace plan: free = 1 client portal, starter = 5, pro = unlimited. Return a typed error the UI turns into an upgrade prompt.
@@ -63,7 +63,7 @@ Write RLS tests (resolved to a Vitest suite using two Supabase test users, `test
 
 1. `client-invite` — freelancer's logo/name/brand color, magic link CTA
 2. `client-login-link` — returning client magic link
-3. `freelancer-auth` — verification / password reset
+3. ~~`freelancer-auth` — verification / password reset~~ — removed with passwords; Google is the only freelancer sign-in, so there is nothing to confirm or reset
 4. `new-message` — author, message preview, deep link to thread
 5. `files-shared` — file count + names, link into portal (no attachments)
 6. `status-update` — project name, old → new status

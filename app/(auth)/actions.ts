@@ -1,67 +1,27 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { siteUrl as appUrl } from "@/lib/urls";
 
-const credentialsSchema = z.object({
-  email: z.string().trim().email("Enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
+// Google is the only way in for freelancers — no passwords anywhere in the
+// product (clients have always signed in by magic link). See DECISIONS.md.
+export async function signInWithGoogle(formData?: FormData) {
+  const requested = formData?.get("next");
+  // Only same-origin paths — never bounce a sign-in to an arbitrary URL.
+  const next =
+    typeof requested === "string" &&
+    requested.startsWith("/") &&
+    !requested.startsWith("//")
+      ? requested
+      : "/app";
 
-export async function signUp(formData: FormData) {
-  const parsed = credentialsSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
-  if (!parsed.success) {
-    redirect(
-      `/signup?error=${encodeURIComponent(parsed.error.issues[0].message)}`
-    );
-  }
-
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({
-    email: parsed.data.email,
-    password: parsed.data.password,
-    options: { emailRedirectTo: `${appUrl()}/auth/callback?next=/app` },
-  });
-  if (error) {
-    redirect(`/signup?error=${encodeURIComponent(error.message)}`);
-  }
-
-  // Local dev has email confirmations off, so a session may exist already.
-  if (data.session) {
-    redirect("/app");
-  }
-  redirect("/login?message=Check your email to confirm your account");
-}
-
-export async function signIn(formData: FormData) {
-  const parsed = credentialsSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
-  if (!parsed.success) {
-    redirect(
-      `/login?error=${encodeURIComponent(parsed.error.issues[0].message)}`
-    );
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) {
-    redirect(`/login?error=${encodeURIComponent("Invalid email or password")}`);
-  }
-  redirect("/app");
-}
-
-export async function signInWithGoogle() {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: `${appUrl()}/auth/callback?next=/app` },
+    options: {
+      redirectTo: `${appUrl()}/auth/callback?next=${encodeURIComponent(next)}`,
+    },
   });
   if (error || !data.url) {
     redirect(
